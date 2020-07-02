@@ -87,6 +87,11 @@ interface MemoTableContentProps {
   props: any;
 }
 
+enum IBodyContentType {
+  body = 'body',
+  summary = 'summary',
+}
+
 const MemoTableContent = React.memo<MemoTableContentProps>(
   ({ children }) => children as React.ReactElement,
 
@@ -372,6 +377,7 @@ function Table<RecordType extends DefaultRecordType>(props: TableProps<RecordTyp
   const fullTableRef = React.useRef<HTMLDivElement>();
   const scrollHeaderRef = React.useRef<HTMLDivElement>();
   const scrollBodyRef = React.useRef<HTMLDivElement>();
+  const scrollSummaryRef = React.useRef<HTMLDivElement>();
   const [pingedLeft, setPingedLeft] = React.useState(false);
   const [pingedRight, setPingedRight] = React.useState(false);
   const [colsWidths, updateColsWidths] = useLayoutState(new Map<React.Key, number>());
@@ -559,6 +565,40 @@ function Table<RecordType extends DefaultRecordType>(props: TableProps<RecordTyp
   const footerTable = summary && <Footer>{summary(mergedData)}</Footer>;
   const customizeScrollBody = getComponent(['body']) as CustomizeScrollBody<RecordType>;
 
+  const getBodyContent = (type: IBodyContentType) => {
+    const ref = {
+      [IBodyContentType.body]: scrollBodyRef,
+      [IBodyContentType.summary]: scrollSummaryRef,
+    }[type];
+
+    const tableContent = {
+      [IBodyContentType.body]: bodyTable,
+      [IBodyContentType.summary]: footerTable,
+    }[type];
+
+    return (
+      <div
+        ref={ref}
+        style={{
+          ...scrollXStyle,
+          ...(type === IBodyContentType.body ? scrollYStyle : {}),
+        }}
+        onScroll={onScroll}
+        className={classNames(`${prefixCls}-${type}`)}
+      >
+        <TableComponent
+          style={{
+            ...scrollTableStyle,
+            tableLayout: mergedTableLayout,
+          }}
+        >
+          {bodyColGroup}
+          {tableContent}
+        </TableComponent>
+      </div>
+    );
+  };
+
   if (
     process.env.NODE_ENV !== 'production' &&
     typeof customizeScrollBody === 'function' &&
@@ -591,26 +631,10 @@ function Table<RecordType extends DefaultRecordType>(props: TableProps<RecordTyp
       }) as number[];
     } else {
       bodyContent = (
-        <div
-          style={{
-            ...scrollXStyle,
-            ...scrollYStyle,
-          }}
-          onScroll={onScroll}
-          ref={scrollBodyRef}
-          className={classNames(`${prefixCls}-body`)}
-        >
-          <TableComponent
-            style={{
-              ...scrollTableStyle,
-              tableLayout: mergedTableLayout,
-            }}
-          >
-            {bodyColGroup}
-            {bodyTable}
-            {footerTable}
-          </TableComponent>
-        </div>
+        <>
+          {getBodyContent(IBodyContentType.body)}
+          {getBodyContent(IBodyContentType.summary)}
+        </>
       );
     }
 
