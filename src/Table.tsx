@@ -87,7 +87,7 @@ interface MemoTableContentProps {
   props: any;
 }
 
-enum IBodyContentType {
+enum BodyContentTypeEnum {
   body = 'body',
   summary = 'summary',
 }
@@ -565,15 +565,15 @@ function Table<RecordType extends DefaultRecordType>(props: TableProps<RecordTyp
   const footerTable = summary && <Footer>{summary(mergedData)}</Footer>;
   const customizeScrollBody = getComponent(['body']) as CustomizeScrollBody<RecordType>;
 
-  const getBodyContent = (type: IBodyContentType) => {
+  const getBodyContent = (type: BodyContentTypeEnum) => {
     const ref = {
-      [IBodyContentType.body]: scrollBodyRef,
-      [IBodyContentType.summary]: scrollSummaryRef,
+      [BodyContentTypeEnum.body]: scrollBodyRef,
+      [BodyContentTypeEnum.summary]: scrollSummaryRef,
     }[type];
 
     const tableContent = {
-      [IBodyContentType.body]: bodyTable,
-      [IBodyContentType.summary]: footerTable,
+      [BodyContentTypeEnum.body]: bodyTable,
+      [BodyContentTypeEnum.summary]: footerTable,
     }[type];
 
     return (
@@ -581,7 +581,7 @@ function Table<RecordType extends DefaultRecordType>(props: TableProps<RecordTyp
         ref={ref}
         style={{
           ...scrollXStyle,
-          ...(type === IBodyContentType.body ? scrollYStyle : {}),
+          ...(type === BodyContentTypeEnum.body ? scrollYStyle : {}),
         }}
         onScroll={onScroll}
         className={classNames(`${prefixCls}-${type}`)}
@@ -632,8 +632,8 @@ function Table<RecordType extends DefaultRecordType>(props: TableProps<RecordTyp
     } else {
       bodyContent = (
         <>
-          {getBodyContent(IBodyContentType.body)}
-          {getBodyContent(IBodyContentType.summary)}
+          {getBodyContent(BodyContentTypeEnum.body)}
+          {footerTable && getBodyContent(BodyContentTypeEnum.summary)}
         </>
       );
     }
